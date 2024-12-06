@@ -1,7 +1,32 @@
-<div x-data="Recipes()">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mx-20 my-10">
-        <template x-for="r in recipes" :key="r.id">
-            <div class="bg-white shadow-md rounded-lg overflow-hidden transform transition-transform hover:scale-105">
+<div x-data="Recipes()" class="mx-20 my-10">
+    <!-- Filtre par niveau de difficulté -->
+    <div class="flex justify-between items-center mb-4">
+        <div>
+        <label for="difficulty" class="mr-2 font-medium">Filtrer par difficulté :</label>
+            <select 
+                id="difficulty" 
+                x-model="selectedDifficulty" 
+                class="border border-gray-300 rounded-lg px-4 py-2"
+            >
+                <option value="">Tous</option>
+                <option value="facile">Facile</option>
+                <option value="moyenne">Moyenne</option>
+                <option value="difficile">Difficile</option>
+            </select>
+        </div>
+        <p>Nombre de recettes affichées : <span x-text="filteredRecipes.length"></span></p>
+    </div>
+
+    <!-- Grille des recettes -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <template 
+            x-for="r in filteredRecipes" 
+            :key="r.id"
+        >
+            <div 
+                class="bg-white shadow-md rounded-lg overflow-hidden transform transition-transform hover:scale-105 cursor-pointer"
+                @click="viewRecipe(r)"
+            >
                 <img 
                     :src="r.imageUrl" 
                     alt="Recipe Image" 
@@ -9,8 +34,15 @@
                 >
                 <div class="p-4">
                     <h3 class="text-lg font-semibold" x-text="r.title"></h3>
+                    <div class="flex justify-between">
+                        <p x-text="r.category"></p>
+                        <p>
+                            <span x-text="r.preparationTime"></span>
+                            minutes
+                        </p>
+                    </div>
                     <p 
-                        class="text-sm mt-2" 
+                        class="text-sm mt-2 font-bold" 
                         x-text="r.difficulty" 
                         :class="{
                             'text-green-500': r.difficulty == 'facile',
@@ -22,5 +54,76 @@
                 </div>
             </div>
         </template>
+    </div>
+
+    <!-- Modale de vue détaillée -->
+    <div 
+        x-show="selectedRecipe"
+        class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+        @click.away="closeRecipe"
+        x-cloak
+    >
+        <div class="bg-white w-11/12 sm:w-3/4 lg:w-1/2 rounded-lg overflow-hidden p-6">
+            <button 
+                class="text-gray-500 hover:text-gray-800 text-xl float-right"
+                @click="closeRecipe"
+            >&times;</button>
+            <div class="flex flex-col" x-show="selectedRecipe">
+                <img 
+                    :src="selectedRecipe?.imageUrl || ''" 
+                    alt="Recipe Image" 
+                    class="w-full h-64 object-cover rounded-lg mb-4"
+                >
+                <h2 class="text-2xl font-bold mb-2" x-text="selectedRecipe?.title || ''"></h2>
+                <div class="flex justify-between">
+                    <p class="text-gray-700">
+                        Catégorie : <span x-text="selectedRecipe?.category || ''"></span>
+                    </p>
+                    <p class="text-gray-700">
+                        Temps de préparation : <span x-text="selectedRecipe?.preparationTime || ''"></span> minutes
+                    </p>
+                    <p class="text-gray-700">
+                        Difficulté : <span x-text="selectedRecipe?.difficulty || ''"></span>
+                    </p>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Ingrédients :</h3>
+                <ul class="list-disc list-inside">
+                    <template x-for="ingredient in selectedRecipe?.ingredients || []">
+                        <li x-text="`${ingredient.quantity || ''} ${ingredient.unit || ''} de ${ingredient.name || ''}`"></li>
+                    </template>
+                </ul>
+
+                <h3 class="text-xl font-semibold mt-6 mb-2">Instructions :</h3>
+                <div class="relative">
+                    <template x-for="(instruction, index) in selectedRecipe?.instructions || []" :key="index">
+                        <div 
+                            x-show="currentStep === index"
+                            class="transition-opacity duration-300"
+                        >
+                            <p class="text-lg font-medium">
+                                Étape <span x-text="index + 1"></span> :
+                            </p>
+                            <p x-text="instruction || ''" class="text-gray-600 mt-2"></p>
+                        </div>
+                    </template>
+                </div>
+                <div class="flex justify-between items-center mt-4">
+                    <button 
+                        class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg"
+                        :disabled="currentStep === 0"
+                        @click="prevStep"
+                    >
+                        Précédent
+                    </button>
+                    <button 
+                        class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg"
+                        :disabled="currentStep === (selectedRecipe?.instructions?.length || 1) - 1"
+                        @click="nextStep"
+                    >
+                        Suivant
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
