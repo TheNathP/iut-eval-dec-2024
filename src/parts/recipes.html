@@ -11,6 +11,7 @@
                 <option value="">Tous</option>
                 <option value="facile">Facile</option>
                 <option value="moyenne">Moyenne</option>
+                <option value="intermédiaire">Intermédiaire</option>
                 <option value="difficile">Difficile</option>
             </select>
         </div>
@@ -54,6 +55,9 @@
                 </div>
             </div>
         </template>
+        <template x-if="filteredRecipes.length === 0">
+            <p>Pas de recette pour le moment...</p>
+        </template>
     </div>
 
     <!-- Modale de vue détaillée -->
@@ -63,11 +67,13 @@
         @click.away="closeRecipe"
         x-cloak
     >
-        <div class="bg-white w-11/12 sm:w-3/4 lg:w-1/2 rounded-lg overflow-hidden p-6">
+        <div class="bg-white w-11/12 sm:w-3/4 lg:w-1/2 rounded-lg overflow-hidden p-6 relative">
             <button 
-                class="text-gray-500 hover:text-gray-800 text-xl float-right"
+                class="flex items-center justify-center text-white hover:text-gray-800 bg-red-500 rounded-full w-8 h-8 absolute top-1 right-1"
                 @click="closeRecipe"
-            >&times;</button>
+            >
+                X
+            </button>
             <div class="flex flex-col" x-show="selectedRecipe">
                 <img 
                     :src="selectedRecipe?.imageUrl || ''" 
@@ -75,7 +81,7 @@
                     class="w-full h-64 object-cover rounded-lg mb-4"
                 >
                 <h2 class="text-2xl font-bold mb-2" x-text="selectedRecipe?.title || ''"></h2>
-                <div class="flex justify-between">
+                <div class="flex justify-between mb-2">
                     <p class="text-gray-700">
                         Catégorie : <span x-text="selectedRecipe?.category || ''"></span>
                     </p>
@@ -100,13 +106,19 @@
                             x-show="currentStep === index"
                             class="transition-opacity duration-300"
                         >
-                            <p class="text-lg font-medium">
-                                Étape <span x-text="index + 1"></span> :
-                            </p>
-                            <p x-text="instruction || ''" class="text-gray-600 mt-2"></p>
+                            <p x-text="instruction || ''" class="text-md font-medium"></p>
                         </div>
                     </template>
                 </div>
+
+                <!-- Barre de progression -->
+                <div class="w-full bg-gray-200 h-2 rounded-full mt-4">
+                    <div 
+                        class="h-2 bg-blue-500 rounded-full transition-all duration-300"
+                        :style="{ width: ((currentStep + 1) / (selectedRecipe?.instructions?.length || 1)) * 100 + '%' }"
+                    ></div>
+                </div>
+
                 <div class="flex justify-between items-center mt-4">
                     <button 
                         class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg"
@@ -123,6 +135,7 @@
                         Suivant
                     </button>
                 </div>
+
             </div>
         </div>
     </div>

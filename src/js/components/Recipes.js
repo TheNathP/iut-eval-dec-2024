@@ -12,11 +12,9 @@ export default function Recipes() {
         },
 
         get filteredRecipes() {
-            // Si aucune difficulté n'est sélectionnée, retournez toutes les recettes
             if (!this.selectedDifficulty) {
                 return this.recipes;
             }
-            // Filtrer les recettes par difficulté
             return this.recipes.filter(
                 (recipe) => recipe.difficulty === this.selectedDifficulty
             );
